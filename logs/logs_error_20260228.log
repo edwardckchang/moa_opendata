@@ -1,0 +1,1 @@
+2026-02-28 00:50:58,993 - load_json_data - ERROR - 解析 JSON 檔案 'C:\Python\data_moa_gov_tw\metadata\metadata.json' 時發生錯誤: Expecting value: line 1 column 1 (char 0)

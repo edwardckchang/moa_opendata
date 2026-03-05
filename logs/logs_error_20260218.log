@@ -1,0 +1,3 @@
+2026-02-18 22:31:07,372 - update_by_metadata - ERROR - '農產品交易行情' 自動更新時發生錯誤: 'tuple' object has no attribute 'get'
+2026-02-18 22:31:42,494 - update_by_metadata - ERROR - '全國單日平均糧價' 自動更新時發生錯誤: 'tuple' object has no attribute 'get'
+2026-02-18 22:32:11,453 - update_by_metadata - ERROR - '糧價查詢' 自動更新時發生錯誤: 'tuple' object has no attribute 'get'

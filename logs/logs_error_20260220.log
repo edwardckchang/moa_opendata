@@ -1,0 +1,3 @@
+2026-02-20 15:12:49,368 - get_user_input_from_metadata_and_minorinfo - ERROR - 未能獲取任何元資料，終止更新。
+2026-02-20 15:12:49,369 - update_by_metadata - ERROR - 更新時發生錯誤: cannot unpack non-iterable NoneType object
+2026-02-20 22:08:32,639 - update_by_metadata - ERROR - 更新時發生錯誤: cannot unpack non-iterable NoneType object

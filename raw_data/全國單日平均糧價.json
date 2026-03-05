@@ -1,0 +1,23 @@
+[
+    {
+        "pt_date": "115.03.04",
+        "pt_1japt": 47.97,
+        "pt_1tsait": 52.47,
+        "pt_1sangt": 53.5,
+        "pt_1glutrt": 57.43,
+        "pt_1glutlt": 57.0,
+        "pt_2japt": 4173.0,
+        "pt_2tsait": 4440.0,
+        "pt_2sangt": 5051.0,
+        "pt_2glutrt": 4945.0,
+        "pt_2glutlt": 4930.0,
+        "pt_4japt": 2670.0,
+        "pt_4tsait": 2497.0,
+        "pt_4sangt": 2915.0,
+        "pt_4glutrt": 2979.0,
+        "pt_4glutlt": 3087.0,
+        "category_table_data_id": 10400010009214,
+        "版本": "0",
+        "foreign_key": "1040001"
+    }
+]
