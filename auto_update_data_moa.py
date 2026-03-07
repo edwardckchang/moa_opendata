@@ -40,7 +40,7 @@ if __name__ == '__main__':
     DBNAME = config.get("DBNAME")
     DB = connect_db(USERNAME, PASSWORD, DBNAME)
     init(DB)
-    setup_logging(level=20) # 在程式啟動時配置日誌系統，可以根據需要調整級別
+    setup_logging(level=10) # 在程式啟動時配置日誌系統，可以根據需要調整級別
     # 確保 metadata_index 表格存在
     create_empty_table_unexistent(metadata, "metadata_index")
     create_files_table_if_not_exists()
