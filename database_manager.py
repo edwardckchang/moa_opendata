@@ -955,30 +955,30 @@ def check_dataset_content_update_status(title: str, comparison_columns: List[str
                     db_records_map[identifier_tuple] = record_dict
 
         # 2. 遍歷當前資料集，檢查每條記錄是否存在於資料庫中
-        with tqdm(total=len(current_dataset_data)) as pbar:
-            for current_item in current_dataset_data:
-                current_item_identifier_values = []
-                if "代碼" not in title:
-                    for col_name in comparison_columns:
-                        value = current_item.get(col_name)
-                        current_item_identifier_values.append(str(value) if value is not None else None)
-                    
-                    current_identifier_tuple = tuple(current_item_identifier_values)
+        # with tqdm(total=len(current_dataset_data)) as pbar:
+        for current_item in current_dataset_data:
+            current_item_identifier_values = []
+            if "代碼" not in title:
+                for col_name in comparison_columns:
+                    value = current_item.get(col_name)
+                    current_item_identifier_values.append(str(value) if value is not None else None)
+                
+                current_identifier_tuple = tuple(current_item_identifier_values)
 
-                    if current_identifier_tuple in db_records_map:
-                        # 如果比對鍵相同，則無需處理，將 ID 加入列表
-                        db_record = db_records_map[current_identifier_tuple]
-                        existing_record_ids.append(db_record.get('category_table_data_id'))
-                    else:
-                        # 如果比對鍵組合不存在，則視為新記錄
-                        max_category_table_data_id += 1
-                        current_item["category_table_data_id"] = max_category_table_data_id
-                        records_to_insert.append(current_item)
+                if current_identifier_tuple in db_records_map:
+                    # 如果比對鍵相同，則無需處理，將 ID 加入列表
+                    db_record = db_records_map[current_identifier_tuple]
+                    existing_record_ids.append(db_record.get('category_table_data_id'))
                 else:
+                    # 如果比對鍵組合不存在，則視為新記錄
                     max_category_table_data_id += 1
                     current_item["category_table_data_id"] = max_category_table_data_id
                     records_to_insert.append(current_item)
-                pbar.update(1)
+            else:
+                max_category_table_data_id += 1
+                current_item["category_table_data_id"] = max_category_table_data_id
+                records_to_insert.append(current_item)
+                # pbar.update(1)
 
         if existing_record_ids:
             logger.notice(f"以下記錄已存在且比對鍵相同，無需更新或插入: {existing_record_ids[:3]}...{existing_record_ids[-3:]} (共 {len(existing_record_ids)} 個)")

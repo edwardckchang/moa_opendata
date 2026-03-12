@@ -82,5 +82,19 @@
         "介接說明文件": "C:\\Python\\data_moa_gov_tw\\raw_data\\pdf\\農業部OpenData+API介接說明書-EIR097糧價查詢-v1.0.pdf",
         "資料更新日期": "2026/02/27 10:10:38",
         "category_table_id": "1040004"
+    },
+    {
+        "標題": "農產品產地價格(月平均價格)",
+        "連結": "https://data.moa.gov.tw/open_detail.aspx?id=652",
+        "資料分類": "農糧",
+        "提供單位": "農糧署",
+        "上架日期": "2016-07-01",
+        "更新頻率": "每月",
+        "資料描述": "提供資料包括：作物、年份、1月價格、2月價格、3月價格、4月價格、5月價格、6月價格、7月價格、8月價格、9月價格、10月價格、11月價格、12月價格等欄位資料。＜政府資料開放平臺資料使用規範＞",
+        "原始資料來源": "https://apis.afa.gov.tw/pagepub/AppContentPage.aspx?itemNo=P...",
+        "資料介接": "https://data.moa.gov.tw/Service/OpenData/DataFileService.aspx?UnitId=652",
+        "介接說明文件": "C:\\Python\\moa_opendata\\raw_data\\pdf\\農業部OpenData+API介接說明書-UDL387農產品產地價格(月平均價格)-v1.0.pdf",
+        "資料更新日期": "2026/03/09 09:50:12",
+        "category_table_id": "1040013"
     }
 ]

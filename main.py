@@ -196,6 +196,8 @@ def handle_data_download_by_user_setting():
         print('3. 重新下載所有資料集')
         print("q. 退出")
         choice = str(input("請輸入您的選擇："))
+        metadata = {}
+        a_metadata = {}
         if choice.lower() == "q":
             return
         elif choice == "1":
@@ -226,11 +228,14 @@ def handle_data_download_by_user_setting():
             fully_auto_update(auto_input_list, True)
             return
         metadata, minor_info = _handle_data_download(page_link, user_inputs, True)
-        title = metadata.get("標題", "'無標題' ")
         if metadata:
+            title = metadata.get("標題", "'無標題' ")
             logger.success(f"'{title}' 的自動更新完成。")
-        else:            
+        elif a_metadata and not metadata:
+            title = a_metadata.get("標題", "'無標題' ")
             logger.warning(f"'{title}' 本次未更新。")
+        else:
+            logger.warning("更新失敗。")
         save_minor_info(minor_info)
         if not save_minor_info_to_sql(minor_info):
             logger.error("未能成功儲存次要資訊到資料庫。")
@@ -300,8 +305,6 @@ def update_by_metadata():
                 return
             try:
                 user_inputs["url"] = webpage_url
-                skip = get_value_from_minorinfo("refer_skip_value", title, "skip")
-                user_inputs["skip"] = skip
                 metadata, minor_info = _handle_data_download(webpage_url, user_inputs)
                 save_minor_info(minor_info)
                 if not save_minor_info_to_sql(minor_info):
@@ -343,7 +346,7 @@ def main():
             print("此功能還未實現。")
         elif choice == '4':
             operations_of_postgresql()
-        DB.close()
+        DB = None
 
 metadata = {
     "標題": "",

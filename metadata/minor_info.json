@@ -1,6 +1,54 @@
 {
     "refer_skip_value": [
         {
+            "標題": "農情調查",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=038",
+            "資料更新日期": "2026/03/09 23:35:00",
+            "category_table_id": "1040011",
+            "資料筆數": "44539"
+        },
+        {
+            "標題": "臺灣地區農產品生產量值",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=ABTXmIWuosiO",
+            "資料更新日期": "2025/06/26 11:35:56",
+            "category_table_id": "1040010",
+            "資料筆數": "2432"
+        },
+        {
+            "標題": "雜糧生產概況",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=8v9pJZ858uOz",
+            "資料更新日期": "2025/01/09 14:35:02",
+            "category_table_id": "1040015",
+            "資料筆數": "5246"
+        },
+        {
+            "標題": "農產品產地價格(月平均價格)",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=652",
+            "資料更新日期": "2026/03/09 09:50:12",
+            "category_table_id": "1040013",
+            "資料筆數": "4515"
+        },
+        {
+            "標題": "臺灣地區蔬菜生產概況",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=113",
+            "資料更新日期": "2025/06/17 14:38:43",
+            "category_table_id": "1040009",
+            "資料筆數": "10812"
+        },
+        {
+            "標題": "產銷履歷與有機蔬果行情",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=H44",
+            "資料更新日期": "2026/03/10 20:30:02",
+            "category_table_id": "1040003",
+            "資料筆數": "436450"
+        },
+        {
             "標題": "各觀測站近兩年降雨量",
             "skip": "0",
             "連結": "https://data.moa.gov.tw/open_detail.aspx?id=5n9c3AlEJ2DH",
@@ -41,129 +89,39 @@
             "資料筆數": "3051"
         },
         {
-            "標題": "農情調查",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=038",
-            "資料更新日期": "2026/03/06 23:35:00",
-            "category_table_id": "1040011",
-            "資料筆數": "44539"
-        },
-        {
-            "標題": "臺灣地區農產品生產量值",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=ABTXmIWuosiO",
-            "資料更新日期": "2025/06/26 11:35:56",
-            "category_table_id": "1040010",
-            "資料筆數": "2432"
-        },
-        {
-            "標題": "雜糧生產概況",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=8v9pJZ858uOz",
-            "資料更新日期": "2025/01/09 14:35:02",
-            "category_table_id": "1040015",
-            "資料筆數": "5246"
-        },
-        {
-            "標題": "農產品產地價格(月平均價格)",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=652",
-            "資料更新日期": "2026/02/13 15:01:48",
-            "category_table_id": "1040013",
-            "資料筆數": "4284"
-        },
-        {
-            "標題": "臺灣地區蔬菜生產概況",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=113",
-            "資料更新日期": "2025/06/17 14:38:43",
-            "category_table_id": "1040009",
-            "資料筆數": "10812"
-        },
-        {
-            "標題": "產銷履歷與有機蔬果行情",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=H44",
-            "資料更新日期": "2026/03/06 20:30:04",
-            "category_table_id": "1040003",
-            "資料筆數": 429393
-        },
-        {
-            "標題": "農產品交易行情",
-            "skip": "5000",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=037",
-            "資料更新日期": "2026/03/07 11:58:04",
-            "category_table_id": "1040012",
-            "資料筆數": 754687
-        },
-        {
-            "標題": "農產品產地價格資料",
-            "skip": "0",
-            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=WVOiWSdDjWxx",
-            "資料更新日期": "2026/03/07 00:50:20",
-            "category_table_id": "1040014",
-            "資料筆數": 353759
-        },
-        {
             "標題": "全國單日平均糧價",
             "skip": "0",
             "連結": "https://data.moa.gov.tw/open_detail.aspx?id=E69",
-            "資料更新日期": "2026/03/06 21:00:07",
+            "資料更新日期": "2026/03/12 21:00:10",
             "category_table_id": "1040001",
-            "資料筆數": 9216
+            "資料筆數": 9222
         },
         {
             "標題": "糧價查詢",
             "skip": "0",
             "連結": "https://data.moa.gov.tw/open_detail.aspx?id=266",
-            "資料更新日期": "2026/03/07 10:11:42",
+            "資料更新日期": "2026/03/12 10:10:30",
             "category_table_id": "1040004",
-            "資料筆數": 242080
+            "資料筆數": 242180
+        },
+        {
+            "標題": "農產品交易行情",
+            "skip": "5000",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=037",
+            "資料更新日期": "2026/03/12 23:40:45",
+            "category_table_id": "1040012",
+            "資料筆數": 769204
+        },
+        {
+            "標題": "農產品產地價格資料",
+            "skip": "0",
+            "連結": "https://data.moa.gov.tw/open_detail.aspx?id=WVOiWSdDjWxx",
+            "資料更新日期": "2026/03/12 00:50:16",
+            "category_table_id": "1040014",
+            "資料筆數": 355306
         }
     ],
     "all_sort_configs": [
-        {
-            "file_name": "全國單日平均糧價",
-            "sort_keys": [
-                [
-                    "pt_date",
-                    "date_asc"
-                ]
-            ],
-            "category_table_id": "1040001"
-        },
-        {
-            "file_name": "臺灣地區蔬菜生產概況",
-            "sort_keys": [
-                [
-                    "年度",
-                    "date_asc"
-                ],
-                [
-                    "蔬菜類別",
-                    "text_asc"
-                ],
-                [
-                    "地區別",
-                    "text_asc"
-                ]
-            ],
-            "category_table_id": "1040009"
-        },
-        {
-            "file_name": "糧價查詢",
-            "sort_keys": [
-                [
-                    "pt_date_day",
-                    "date_asc"
-                ],
-                [
-                    "name",
-                    "text_asc"
-                ]
-            ],
-            "category_table_id": "1040004"
-        },
         {
             "file_name": "產銷履歷與有機蔬果行情",
             "sort_keys": [
@@ -299,6 +257,32 @@
             "category_table_id": "1040008"
         },
         {
+            "file_name": "農產品產地價格資料",
+            "sort_keys": [
+                [
+                    "YEAR",
+                    "date_asc"
+                ],
+                [
+                    "MONTH",
+                    "text_asc"
+                ],
+                [
+                    "PERIOD",
+                    "text_asc"
+                ],
+                [
+                    "PRODUCTNAME",
+                    "text_asc"
+                ],
+                [
+                    "ORGNAME",
+                    "text_asc"
+                ]
+            ],
+            "category_table_id": "1040014"
+        },
+        {
             "file_name": "農情調查",
             "sort_keys": [
                 [
@@ -327,32 +311,6 @@
                 ]
             ],
             "category_table_id": "1040011"
-        },
-        {
-            "file_name": "農產品產地價格資料",
-            "sort_keys": [
-                [
-                    "YEAR",
-                    "date_asc"
-                ],
-                [
-                    "MONTH",
-                    "text_asc"
-                ],
-                [
-                    "PERIOD",
-                    "text_asc"
-                ],
-                [
-                    "PRODUCTNAME",
-                    "text_asc"
-                ],
-                [
-                    "ORGNAME",
-                    "text_asc"
-                ]
-            ],
-            "category_table_id": "1040014"
         },
         {
             "file_name": "臺灣地區農產品生產量值",
@@ -467,6 +425,48 @@
                 ]
             ],
             "category_table_id": "1040013"
+        },
+        {
+            "file_name": "臺灣地區蔬菜生產概況",
+            "sort_keys": [
+                [
+                    "年度",
+                    "date_asc"
+                ],
+                [
+                    "蔬菜類別",
+                    "text_asc"
+                ],
+                [
+                    "地區別",
+                    "text_asc"
+                ]
+            ],
+            "category_table_id": "1040009"
+        },
+        {
+            "file_name": "全國單日平均糧價",
+            "sort_keys": [
+                [
+                    "pt_date",
+                    "date_asc"
+                ]
+            ],
+            "category_table_id": "1040001"
+        },
+        {
+            "file_name": "糧價查詢",
+            "sort_keys": [
+                [
+                    "pt_date_day",
+                    "date_asc"
+                ],
+                [
+                    "name",
+                    "text_asc"
+                ]
+            ],
+            "category_table_id": "1040004"
         }
     ]
 }

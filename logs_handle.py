@@ -62,6 +62,8 @@ class ConditionalFormatter(logging.Formatter):
         self.detailed_format = logging.Formatter('%(asctime)s - %(funcName)s - %(levelname)s - %(message)s', datefmt=datefmt, style=style)
 
     def format(self, record):
+        if record.levelno == 10:
+            return self.detailed_format.format(record)
         if record.levelno <= SUCCESS_LEVEL_NUM:
             return self.simple_format.format(record)
         else:
