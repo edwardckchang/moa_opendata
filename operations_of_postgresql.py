@@ -768,7 +768,7 @@ def operations_of_postgresql():
         print("6. 刪除資料集內重複資料")
         print("7. 建立資料集索引（加速資料庫作業速度）")
         print("q. 退出")
-        choice = str(input("請輸入您的選擇 (1-6,q): "))
+        choice = str(input("請輸入您的選擇 (1-7,q): "))
         if choice.lower() == 'q':
             logger.info("退出資料庫操作。")
             try:

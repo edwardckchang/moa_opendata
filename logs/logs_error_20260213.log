@@ -1,4 +1,0 @@
-2026-02-13 02:12:31,431 - parse_webpage_to_metadata - ERROR - 從 'https://data.moa.gov.tw/open_detail.aspx?id=i5AdyGE26hcq' 下載網頁時發生網路錯誤: HTTPSConnectionPool(host='data.moa.gov.tw', port=443): Max retries exceeded with url: /open_detail.aspx?id=i5AdyGE26hcq (Caused by ConnectTimeoutError(<urllib3.connection.HTTPSConnection object at 0x000002A127DA7520>, 'Connection to data.moa.gov.tw timed out. (connect timeout=10)'))
-2026-02-13 02:12:31,431 - _handle_data_download - ERROR - 未成功提取網頁 'https://data.moa.gov.tw/open_detail.aspx?id=i5AdyGE26hcq' Metadata。
-2026-02-13 02:12:42,839 - _handle_data_download - ERROR - 未成功下載 JSON 資料。
-2026-02-13 02:15:02,262 - _handle_data_download - ERROR - 未成功下載 JSON 資料。

@@ -1,4 +1,0 @@
-2025-11-06 01:00:49,169 - parse_webpage_to_metadata - ERROR - 從 'https://data.moa.gov.tw/open_detail.aspx?id=652' 下載網頁時發生網路錯誤: HTTPSConnectionPool(host='data.moa.gov.tw', port=443): Read timed out. (read timeout=10)
-2025-11-06 01:00:49,169 - _handle_data_download - ERROR - 未成功提取網頁 'https://data.moa.gov.tw/open_detail.aspx?id=652' Metadata。
-2025-11-06 14:59:54,329 - parse_webpage_to_metadata - ERROR - 從 'https://data.moa.gov.tw/open_detail.aspx?id=H44' 下載網頁時發生網路錯誤: HTTPSConnectionPool(host='data.moa.gov.tw', port=443): Read timed out. (read timeout=10)
-2025-11-06 14:59:54,330 - _handle_data_download - ERROR - 未成功提取網頁 'https://data.moa.gov.tw/open_detail.aspx?id=H44' Metadata。

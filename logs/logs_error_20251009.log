@@ -1,5 +1,0 @@
-2025-10-09 02:35:00,338 - _execute_sql - ERROR - 執行 SQL 失敗: MemoryError: 
-SQL: SELECT "pt_date_day", "name", "pt_1japt", category_table_data_id FROM "1040004";
-Params: None
-2025-10-09 02:35:26,717 - save_dataframe_to_postgresql - ERROR - 儲存資料到 PostgreSQL 表格 '1040004' 失敗: 
-2025-10-09 02:35:48,265 - load_json_data - ERROR - 讀取檔案 'c:\Python\data_moa_gov_tw\hand_download\農產品交易行情.json' 時發生錯誤: 

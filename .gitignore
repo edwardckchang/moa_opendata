@@ -4,3 +4,8 @@ __pycache__/
 hand_download/
 資料庫結構.md
 temp.py
+test.*
+metadata/
+logs/
+raw_data/*.json
+temp_data_dedup.py
