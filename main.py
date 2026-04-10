@@ -14,10 +14,9 @@ import pandas as pd
 # from function_call_map import draw_fuction_call_map
 import time
 
-def fully_auto_update(auto_input_list, autodetect_skip= False, level = 20):
+def fully_auto_update(auto_input_list, autodetect_skip= False):
     global minor_info
     make_AUTO_YES()
-    setup_logging(level)
     execution_records = {}
     for auto_input in auto_input_list:
         title = auto_input.get("標題")
@@ -75,8 +74,7 @@ def _handle_data_download(webpage_url: str, user_inputs: dict, autodetect_skip =
     if data_len is None:
         data_len = auto_input.get("資料筆數", None)
         if not data_len:
-            data_len = get_count(category_table_id)
-            auto_input["資料筆數"] = data_len
+            auto_input["資料筆數"] = get_count(category_table_id)
     if not update_status: # None 表示無需更新
         logger.notice(f"資料集 '{page_title}' 內容無需更新，終止下載。")        
         return None, minor_info
@@ -172,13 +170,14 @@ def _handle_data_download(webpage_url: str, user_inputs: dict, autodetect_skip =
     # 將需要插入的記錄存入資料庫
     if downloaded_json_data:
         if not insert_or_update_metadata(metadata): # 將 metadata 存入資料庫並獲取更新後的 metadata        
+            logger.error(f"未成功更新 '{page_title}' 的 Metadata。")
             return None, minor_info
         logger.success(f"插入或更新 '{page_title}' 的 Metadata 成功。")
-        if not save_dataframe_to_postgresql(downloaded_json_data, category_table_id, page_title):            
+        if not save_dataframe_to_postgresql(downloaded_json_data, category_table_id, page_title):  
+            logger.error(f"未成功更新 '{page_title}' 的資料。")
             return None, minor_info
         logger.logs(f"已成功批量插入 '{page_title}' 的總計 {len(downloaded_json_data)} 條記錄到表格 '{category_table_id}' 。")
-    data_len = get_count(category_table_id)
-    auto_input["資料筆數"] = data_len
+    auto_input["資料筆數"] = get_count(category_table_id)
     minor_info['refer_skip_value'] = [item for item in minor_info['refer_skip_value'] if item.get("標題") != page_title]
     minor_info['refer_skip_value'].append(auto_input)
     return metadata, minor_info
@@ -271,8 +270,8 @@ def get_count(table_id):
     if _table_exists(table_id):
         # 這裡使用你底層的 SQL 執行工具
         res = _execute_sql(f'SELECT COUNT(*) FROM "{table_id}";', fetch_all=True)
-        return res[0]['count'] if res else 0
-    return 0
+        return f"{res[0]['count'] if res else 0}"
+    return "0"
 
 def update_by_metadata():
     """
@@ -284,37 +283,36 @@ def update_by_metadata():
         logger.error("未能成功讀取次要資訊。")
         return
     auto_input_list: list[dict] = minor_info.get("refer_skip_value")
-    if auto_input_list:
-        if yes_no_menu("是否開始自動更新？"):
-            fully_auto_update(auto_input_list)
-        else:
-            select_row = metadata_selection()
-            if select_row:
-                title = select_row.get('標題', '')                
-                table_id = select_row.get('表格ID', '')
-                a_metadata = global_metadata_cache.get(table_id)
-                if not a_metadata:
-                    logger.error(f"無法取得資料集ID[{table_id}]的元資料，請檢查資料庫結構。")
-                    return
-                webpage_url = a_metadata.get("連結")
-                if not webpage_url:
-                    logger.error(f"無法取得資料集ID[{table_id}]的連結，請檢查元資料。")
-                    return
-            else:
-                print("沒有選擇任何資料集。")
+    if auto_input_list and yes_no_menu("是否開始自動更新？"):
+        fully_auto_update(auto_input_list)
+    else:
+        select_row = metadata_selection()
+        if select_row:
+            title = select_row.get('標題', '')                
+            table_id = select_row.get('表格ID', '')
+            a_metadata = global_metadata_cache.get(table_id)
+            if not a_metadata:
+                logger.error(f"無法取得資料集ID[{table_id}]的元資料，請檢查資料庫結構。")
                 return
-            try:
-                user_inputs["url"] = webpage_url
-                metadata, minor_info = _handle_data_download(webpage_url, user_inputs)
-                save_minor_info(minor_info)
-                if not save_minor_info_to_sql(minor_info):
-                    logger.error("儲存次要資訊到資料庫時發生錯誤。")
-                if metadata:
-                    logger.success(f"'{title}' 的更新完成。")
-                else:
-                    logger.info(f"'{title}' 本次未更新。")
-            except Exception as e:
-                logger.error(f"更新時發生錯誤: {e}")
+            webpage_url = a_metadata.get("連結")
+            if not webpage_url:
+                logger.error(f"無法取得資料集ID[{table_id}]的連結，請檢查元資料。")
+                return
+        else:
+            print("沒有選擇任何資料集。")
+            return
+        try:
+            user_inputs["url"] = webpage_url
+            metadata, minor_info = _handle_data_download(webpage_url, user_inputs)
+            save_minor_info(minor_info)
+            if not save_minor_info_to_sql(minor_info):
+                logger.error("儲存次要資訊到資料庫時發生錯誤。")
+            if metadata:
+                logger.success(f"'{title}' 的更新完成。")
+            else:
+                logger.info(f"'{title}' 本次未更新。")
+        except Exception as e:
+            logger.error(f"更新時發生錯誤: {e}")
         
 def main():
     """
@@ -326,8 +324,13 @@ def main():
     pd.set_option('display.width', 120)
     pd.set_option('display.max_colwidth', 60)
     pd.set_option('display.colheader_justify', 'left')
+    if yes_no_menu("是否開始自動更新？"):
+        make_AUTO_YES()
+        update_by_metadata()
+        disable_auto_confirm()
+        print("自動更新完成，結束程式。")
+        return
     while True:
-        DB = connect_db(USERNAME, PASSWORD, DBNAME)
         print("\n請選擇操作：")
         print("1. 輸入目標網址下載並儲存資料")
         print("2. 更新統計資料")
@@ -346,7 +349,6 @@ def main():
             print("此功能還未實現。")
         elif choice == '4':
             operations_of_postgresql()
-        DB = None
 
 metadata = {
     "標題": "",
@@ -372,6 +374,9 @@ def init(db_connection):
     minor_info = get_minor_info_data()
 
 if __name__ == "__main__":
+    from utils import init_checkpoint
+    init_checkpoint(False, False)
+    setup_logging(level=20) # 在程式啟動時配置日誌系統，可以根據需要調整級別
     load_dotenv() # 在程式啟動時載入 .env 檔案
     config = dotenv_values() # 讀取 .env 檔案中的值
     USERNAME = config.get("USERNAME")
@@ -379,7 +384,6 @@ if __name__ == "__main__":
     DBNAME = config.get("DBNAME")
     DB = connect_db(USERNAME, PASSWORD, DBNAME)  
     init(DB)
-    setup_logging(level=10) # 在程式啟動時配置日誌系統，可以根據需要調整級別
     # 確保 metadata_index 表格存在
     create_empty_table_unexistent(metadata, "metadata_index")
     create_files_table_if_not_exists()
@@ -390,4 +394,6 @@ if __name__ == "__main__":
         DB.close() # 關閉資料庫連線
         logger.notice("資料庫連線已關閉。")
     except:
+        DB = None
+        logger.error("關閉資料庫連線時發生錯誤。")
         pass

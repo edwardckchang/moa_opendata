@@ -34,7 +34,7 @@ def check_metadata_integrity(metadata: dict, webpage_url: str) -> bool:
 
     # 檢查 page_title 是否包含 "代碼"
     if page_title and "代碼" in page_title:
-        logger.warning(f"偵測到標題 '{page_title}' 包含 '代碼'，將刪除相關檔案。")
+        logger.warning(f"偵測到標題 '{page_title}' 包含 '代碼'，將刪除相關json檔案。")
         raw_data_path = os.path.join(current_file_dir, "raw_data", f"{page_title}.json")
         hand_download_path = os.path.join(current_file_dir, "hand_download", f"{page_title}.json")
 
@@ -80,9 +80,9 @@ def _find_and_select_pdf_document(page_title: str):
             if not os.path.exists(matched_pdf_path):
                 logger.error(f"在 '{pdf_directory}' 中找到與網頁標題 '{page_title}' (清理後: '{cleaned_page_title_for_match}') 匹配的 PDF 檔案，但生成路徑 '{matched_pdf_path}' 不存在。")
                 return None
-            logger.info(f"找到匹配的 PDF 檔案: '{matched_pdf_path}'，將用於介接說明文件。")
+            logger.notice(f"找到匹配的 PDF 檔案: '{matched_pdf_path}'，將用於介接說明文件。")
             return matched_pdf_path
-    logger.error(f"未在<{pdf_directory}>中找到與網頁標題 '{page_title}' (清理後: '{cleaned_page_title_for_match}') 匹配的 PDF 檔案。")
+    logger.warning(f"未在<{pdf_directory}>中找到與網頁標題 '{page_title}' (清理後: '{cleaned_page_title_for_match}') 匹配的 PDF 檔案。")
     return None
 
 def replace_url_parameters(original_url, new_params):
@@ -170,36 +170,34 @@ def fetch_and_process_json_data(json_data_raw: list, cleaned_page_title: str, ca
         logger.error(f"'{cleaned_page_title}' 的json_data_raw不是字典也不是列表，終止處理。")
         return ([], "")
     json_data_first = json_data_raw[0]
-
-    if "分布圖Url" in json_data_first and json_data_first["分布圖Url"]:
-        if delete_all_data_from_table(str(category_table_id)):
-            logger.notice(f"資料表格 '{category_table_id}' 資料清空成功。")
-        id_start = int(f"{category_table_id}0000000") # 地圖資料永遠從最初開始 (全覆蓋)
+    if "分布圖Url" in json_data_first or "代碼" in cleaned_page_title:
+        logger.notice("資料為分布圖或代碼，重新建立資料序列。")
+        id_start = int(f"{category_table_id}0000000") # 地圖資料或代碼永遠從最初開始 (全覆蓋)
         for json_data in json_data_raw:
             id_start+=1
             try:
                 first_value = json_data[next(iter(json_data))]
-                logger.notice(f"正在處理 '{cleaned_page_title}' 的JSON 資料，資料表鍵值: '{first_value}'")
-                map_title = json_data["圖檔中文名稱"]
-                logger.notice(f"正在處理 '{cleaned_page_title}' 的JSON 資料，圖檔資料名稱: '{map_title}'")
-                png_url = json_data["分布圖Url"]
-                if png_url: # 不再下載圖片
-                    json_data["category_table_data_id"] = str(id_start)
-                    json_data["版本"] = "0"
-                    json_data["foreign_key"] = category_table_id
-                else:
-                    logger.warning(f"下載 '{cleaned_page_title}' 的分布圖 '{first_value}' 失敗，跳過此圖片處理。")
+                logger.debug(f"正在處理 '{cleaned_page_title}' 的JSON 資料，資料表鍵值: '{first_value}'")
+                # map_title = json_data["圖檔中文名稱"]
+                # logger.notice(f"正在處理 '{cleaned_page_title}' 的JSON 資料，圖檔資料名稱: '{map_title}'")
+                # png_url = json_data["分布圖Url"]
+                # if png_url: # 不再下載圖片
+                json_data["category_table_data_id"] = str(id_start)
+                    # json_data["版本"] = "0"
+                json_data["foreign_key"] = category_table_id
+                # else:
+                #     logger.warning(f"下載 '{cleaned_page_title}' 的分布圖 '{first_value}' 失敗，跳過此圖片處理。")
             except Exception as e:
                 logger.error(f"處理 '{cleaned_page_title}' 的分布圖 '{first_value}' 時遭遇錯誤: {e}")
     else:
-        logger.notice(f"原始資料 '{cleaned_page_title}' 不包含分布圖 URL，跳過分布圖下載。")
+        # logger.notice(f"原始資料 '{cleaned_page_title}' 不包含分布圖 URL，跳過分布圖下載。")
         for json_data in json_data_raw:
-            json_data["版本"] = "0"
+            # json_data["版本"] = "0"
             json_data["foreign_key"] = category_table_id
 
     json_filename = f"{cleaned_page_title}.json"
     json_path = save_json_data(json_data_raw, os.path.join(current_file_dir, "raw_data", json_filename))
-    logger.notice(f"已下載 '{cleaned_page_title}' 的原始 JSON 資料路徑: '{json_path}'")
+    logger.debug(f"已下載 '{cleaned_page_title}' 的原始 JSON 資料路徑: '{json_path}'")
     return json_data_raw, json_path
 
 def parse_webpage_to_metadata(webpage_url: str) -> dict:
@@ -342,7 +340,8 @@ def download_and_deduplicate_data(title, user_inputs) -> list[dict]:
         json_list, interruption_details = restoration_result
         name = interruption_details.get('name', '')
         base_url = interruption_details.get('url', '')
-        skip = interruption_details.get('false_at_skip', 0) # 如果沒有 false_at_skip，則從 0 開始
+        skip = interruption_details.get('false_at_skip', "0") # 如果沒有 false_at_skip，則從 0 開始
+        skip = int(skip)
         logger.notice(f"已從中斷點還原資料。從 skip={skip} 繼續下載，檔案名稱: {name}，基礎 URL: {base_url}")
     else:
         base_url = user_inputs.get("url", "")
@@ -386,8 +385,13 @@ def download_and_deduplicate_data(title, user_inputs) -> list[dict]:
                 "url": base_url, # 儲存基礎 URL
                 "false_at_skip": skip # 記錄中斷時的 skip 值
             }
-            save_interruption_info(json_list, interruption_details)
-            logger.warning("已儲存中斷資訊，請檢查 'hand_download' 目錄。")
+            save_interruption =  save_interruption_info(json_list, interruption_details)
+            if save_interruption:
+                logger.warning("已儲存中斷資訊，請檢查 'hand_download' 目錄。")
+            elif save_interruption == False:
+                logger.error("儲存中斷資訊時發生錯誤。")
+            elif save_interruption == None:
+                logger.warning("未儲存中斷資訊。")
             return []        
         if not data:
             logger.notice("資料末端：下載的資料為空。")        

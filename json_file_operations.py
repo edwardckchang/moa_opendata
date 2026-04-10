@@ -248,15 +248,19 @@ def save_interruption_info(downloaded_data_content: list, interruption_details: 
 
     # 1. 生成時間戳記
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
+    if not downloaded_data_content:
+        return None
     # 2. 處理中斷資訊
     interruption_details["interruption_record"] = downloaded_data_content
     interruption_record_filename = f"interruption_record_{timestamp}.json"
     interruption_record_path = os.path.join(output_dir, interruption_record_filename)
     if save_json_data(interruption_details, interruption_record_path):
         logger.info(f"已將中斷資訊儲存至檔案: '{interruption_record_path}'")
+        return True
     else:
         logger.error(f"儲存中斷資訊檔 '{interruption_record_path}' 時發生錯誤。")
+        return False
+
 
 def load_minor_info() -> dict[list[dict]]:
     current_file_dir = os.path.dirname(os.path.abspath(__file__))

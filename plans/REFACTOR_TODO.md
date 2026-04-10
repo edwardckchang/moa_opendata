@@ -18,7 +18,7 @@
 
 ### 1-B　`main.py` — 修正重複連線問題
 
-- [ ] 將 `main()` while 迴圈內的 `DB = connect_db(...)` 移除，連線只在 `__main__` 區塊執行一次
+- [X] 將 `main()` while 迴圈內的 `DB = connect_db(...)` 移除，連線只在 `__main__` 區塊執行一次
 - [ ] 確認 `init(db_connection)` 是唯一設定 `DB` / `global_metadata_cache` / `minor_info` 的入口，移除其他散落的 `global DB` 賦值
 
 ### 1-C　`opperations_of_postgresql.py` — 移除重複初始化副作用
@@ -28,7 +28,7 @@
 
 ### 1-D　`auto_update_data_moa.py` — 對齊連線初始化方式
 
-- [ ] 確認 `__main__` 區塊的 `DB` 連線與初始化流程與 `main.py` 一致（目前兩者各自連線，邏輯重複）
+- [X] 整合進 `main.py` 後移除該文件。
 
 ---
 

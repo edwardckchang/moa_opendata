@@ -69,6 +69,20 @@ class ConditionalFormatter(logging.Formatter):
         else:
             return self.detailed_format.format(record)
 
+class LazyFileHandler(logging.FileHandler):
+    def __init__(self, filename, mode='a', encoding=None):
+        self.baseFilename = os.path.abspath(filename)
+        self.mode = mode
+        self.encoding = encoding
+        self.errors = None
+        self.stream = None
+        logging.Handler.__init__(self)
+
+    def emit(self, record):
+        if self.stream is None:
+            self.stream = self._open()
+        super().emit(record)
+
 def setup_logging(level=15, log_dir="logs"):
     """
     配置日誌系統，支援控制台和分級檔案輸出。
@@ -116,28 +130,28 @@ def setup_logging(level=15, log_dir="logs"):
         logging.root.addHandler(console_handler)
 
         # 添加 execution 日誌檔案處理器
-        execution_handler = logging.FileHandler(execution_log_file, mode='a', encoding='utf-8')
+        execution_handler = LazyFileHandler(execution_log_file, mode='a', encoding='utf-8')
         execution_handler.setLevel(EXECUTION_LEVEL_NUM)
         execution_handler.addFilter(ExecutionFilter())
         execution_handler.setFormatter(conditional_formatter)
         logging.root.addHandler(execution_handler)
 
         # 添加 SUCCESS 日誌檔案處理器
-        success_handler = logging.FileHandler(success_log_file, mode='a', encoding='utf-8')
+        success_handler = LazyFileHandler(success_log_file, mode='a', encoding='utf-8')
         success_handler.setLevel(SUCCESS_LEVEL_NUM)
         success_handler.addFilter(SuccessFilter())
         success_handler.setFormatter(conditional_formatter)
         logging.root.addHandler(success_handler)
 
         # 添加 LOGS 日誌檔案處理器
-        logs_handler = logging.FileHandler(logs_log_file, mode='a', encoding='utf-8')
+        logs_handler = LazyFileHandler(logs_log_file, mode='a', encoding='utf-8')
         logs_handler.setLevel(LOGS_LEVEL_NUM)
         logs_handler.addFilter(LogsFilter())
         logs_handler.setFormatter(conditional_formatter)
         logging.root.addHandler(logs_handler)
 
         # 添加 ERROR 和 CRITICAL 日誌檔案處理器
-        error_handler = logging.FileHandler(error_log_file, mode='a', encoding='utf-8')
+        error_handler = LazyFileHandler(error_log_file, mode='a', encoding='utf-8')
         error_handler.setLevel(logging.ERROR)
         error_handler.addFilter(ErrorFilter())
         error_handler.setFormatter(conditional_formatter)
