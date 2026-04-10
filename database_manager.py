@@ -10,6 +10,7 @@ current_base_dir = os.path.dirname(os.path.abspath(__file__))
 from tqdm import tqdm # 導入 tqdm
 from menu_utils import yes_no_menu
 import pandas as pd
+from utils import Checkpoint
 
 DB = None
 
@@ -42,12 +43,12 @@ def get_minor_info_data():
     refer_skip_value = []
     all_sort_configs = []
     if not _table_exists("refer_skip_value"):
-        refer_skip_value = None
+        refer_skip_value = []
     else:
         sql_query = "SELECT * FROM refer_skip_value;"
         refer_skip_value = _execute_sql(sql_query, fetch_all=True)
     if not _table_exists("all_sort_configs"):
-        all_sort_configs = None
+        all_sort_configs = []
     else:
         sql_query = "SELECT * FROM all_sort_configs;"
         all_sort_configs = _execute_sql(sql_query, fetch_all=True)
@@ -65,9 +66,28 @@ def get_minor_info_data():
                     except (json.JSONDecodeError, TypeError):
                         # 如果不是 JSON 格式就跳過
                         pass
+    if not _table_exists("all_merge_configs"):
+        all_merge_configs = []
+    else:
+        sql_query = "SELECT * FROM all_merge_configs;"
+        all_merge_configs = _execute_sql(sql_query, fetch_all=True)
+        for d in all_merge_configs:
+            raw_value = d.get("merge_keys")
+            if isinstance(raw_value, str):
+                try:
+                    d["merge_keys"] = json.loads(raw_value)
+                except (json.JSONDecodeError, TypeError):
+                    pass
 
-
-    return {"refer_skip_value": refer_skip_value, "all_sort_configs": all_sort_configs}
+    # [整合內容] 修改回傳字典
+    with Checkpoint("資料與型別") as cpt:
+        if cpt:
+            cpt.show("all_merge_configs", all_merge_configs)
+    return {
+        "refer_skip_value": refer_skip_value, 
+        "all_sort_configs": all_sort_configs, 
+        "all_merge_configs": all_merge_configs
+    }
     
 
 def _generate_global_data():
@@ -370,7 +390,7 @@ def create_empty_table_unexistent(metadata_schema: dict, table_name: str) -> Non
             foreign_key_sql = "" # 初始化 foreign_key_sql
             if table_name == "metadata_index":
                 primary_key_sql = ",\n        PRIMARY KEY (category_table_id)"
-            elif table_name == "refer_skip_value" or table_name == "all_sort_configs":
+            elif table_name in ("refer_skip_value", "all_sort_configs", "all_merge_configs"):
                 primary_key_sql = ""
                 foreign_key_sql = f",\n        category_table_id VARCHAR(255) NOT NULL UNIQUE REFERENCES metadata_index(category_table_id) ON DELETE CASCADE"
             else:
@@ -475,6 +495,10 @@ def insert_or_update_metadata(metadata: dict):
                 return True
             else:
                 return False
+        if success_metadata_index:
+            return True
+        else:
+            return False
     except Exception as e:
         logger.error(f"插入或更新 metadata 到 metadata_index 表格失敗: {e}")
 
@@ -566,14 +590,24 @@ def save_minor_info_to_sql(minor_info: dict):
         if not minor_info:
             return None
         metadata = get_global_data()
-        refer_skip_value = minor_info.get("refer_skip_value")
-        all_sort_configs = minor_info.get("all_sort_configs")
+        refer_skip_value = minor_info.get("refer_skip_value") or []
+        all_sort_configs = minor_info.get("all_sort_configs") or []
+        all_merge_configs = minor_info.get("all_merge_configs") or []
+        with Checkpoint("資料檢查") as cpt:
+            if cpt:
+                cpt.show("all_merge_configs", all_merge_configs)
         if refer_skip_value:
             if not _save_info(refer_skip_value, "refer_skip_value", metadata):
+                logger.error(f"儲存 'refer_skip_value' 失敗。")
                 return None
 
         if all_sort_configs:
             if not _save_info(all_sort_configs, "all_sort_configs", metadata):
+                logger.error(f"儲存 'all_sort_configs' 失敗。")
+                return None
+        if all_merge_configs:
+            if not _save_info(all_merge_configs, "all_merge_configs", metadata):
+                logger.error(f"儲存 'all_merge_configs' 失敗。")
                 return None
         return True
     except Exception as e:
@@ -596,7 +630,7 @@ def save_dataframe_to_postgresql(data: list, table_name: str, title: str):
         if not data:
             logger.warning(f"沒有 '{title}' 的資料可存入表格 '{table_name}'.")
             return None
-        if "代碼" in title:
+        if "代碼" in title or "空間" in title:
             if _table_exists(table_name):
                 if delete_all_data_from_table(table_name):
                     logger.notice(f"清理 '{title}' 的資料表格 '{table_name}' 資料清空成功。")
@@ -619,7 +653,6 @@ def save_dataframe_to_postgresql(data: list, table_name: str, title: str):
 
         # 獲取所有欄位名稱
         columns_for_sql = [f'"{col.replace(" ", "_").replace(".", "_").replace("-", "_")}"' for col in processed_data[0].keys()]
-        
         return _insert_records_to_postgresql(processed_data, table_name, columns_for_sql)
 
     except Exception as e:
@@ -690,13 +723,6 @@ def check_metadata_update_status(metadata: dict) -> tuple[bool, str]:
                 return False, str(db_category_table_id)
             else:
                 logger.notice(f"資料集 '{page_title}' 的更新日期已更新 (舊: {db_update_date_from_db}, 新: {web_update_date_str})，需要更新。")
-                # 新增邏輯：如果 page_title 包含 "代碼" 且更新日期不同，則清空資料表格
-                if "代碼" in page_title and _table_exists(db_category_table_id):
-                    logger.notice(f"資料集 '{page_title}' 標題包含 '代碼' 且更新日期不同，正在清空相關資料表格 '{db_category_table_id}'...")
-                    if delete_all_data_from_table(str(db_category_table_id)):
-                        logger.notice(f"資料表格 '{db_category_table_id}' 資料清空成功。")
-                    else:
-                        return False, ""
                 return True, str(db_category_table_id)
         else:
             logger.notice(f"資料集 '{page_title}' 在資料庫中不存在，將進行新增。")
@@ -1035,19 +1061,6 @@ def table_columns_sql(metadata_schema: dict) -> str:
         if col_name == "foreign_key":
             continue
         pg_type = "TEXT"
-        if col_type == "integer":
-            pg_type = "BIGINT"
-        elif col_type == "float":
-            pg_type = "DOUBLE PRECISION"
-        elif col_type == "boolean":
-            pg_type = "BOOLEAN"
-        elif col_type == "datetime":
-            pg_type = "TIMESTAMP WITH TIME ZONE"
-        elif col_type == "string":
-            pg_type = "TEXT"
-        elif col_type == "json":
-            pg_type = "JSONB" # 使用 JSONB 類型儲存 JSON 資料
-
         safe_col_name = f'"{col_name.replace(" ", "_").replace(".", "_").replace("-", "_")}"'
         col_definitions.append(f'{safe_col_name} {pg_type}')
 

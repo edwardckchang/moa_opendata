@@ -2,14 +2,13 @@ import pandas as pd
 from dotenv import load_dotenv, dotenv_values
 from logs_handle import logger, setup_logging
 from database_manager import _ensure_db_connection, _execute_sql, DB, connect_db, delete_table_and_metadata_entry, _table_exists, get_global_data # 導入輔助函數和全局 DB
-from database_manager import rename_data_tables, get_table_columns, get_dataset_content_for_list, get_minor_info_data
+from database_manager import rename_data_tables, get_table_columns, get_dataset_content_for_list, get_minor_info_data, save_minor_info_to_sql
 import os, re
 import shutil # 導入 shutil 模組用於高階檔案操作
 from typing import Optional, List, Tuple # 導入 Optional
 from json_file_operations import delete_metadata_entry_from_json # 導入新的 JSON 檔案操作函式
-from utils import display_dataframe, select_row_by_index, get_comparison_columns
+from utils import display_dataframe, select_row_by_index, get_comparison_columns, Checkpoint
 from menu_utils import yes_no_menu
-from sort_data_by_date import load_minor_info
 import json
 from db_maintenance import create_indexes_for_all_tables
 
@@ -661,7 +660,8 @@ def _delete_replicate_data(preview: bool = False):
     print("\n--- 刪除資料集內重複資料 ---")
     # if yes_no_menu("即將刪除所有資料集內重複資料，將會花費大量時間，是否繼續？"):    
     minor_info = get_minor_info_data()
-    all_sort_configs: list[dict] = minor_info.get("all_sort_configs", [])
+    all_sort_configs: list[dict] = minor_info.get("all_sort_configs") or []
+    all_merge_configs: list[dict] = minor_info.get("all_merge_configs") or []
     if all_sort_configs is None or not isinstance(all_sort_configs, list):
         all_sort_configs = []
     df_display = _listing_metadata()
@@ -742,6 +742,99 @@ def _delete_replicate_data(preview: bool = False):
             input("按 Enter 開始清理重複資料...")
             _execute_sql(delete_sql)
             logger.success(f"表格<{title}>重複資料清理完成。")
+        # --- 2. 進階清理：根據索引鍵合併資料 ---
+        
+        # 尋找該表是否有歷史設定 (透過 table_id 匹配)
+        config = next((c for c in all_merge_configs if c.get("category_table_id") == table_id), None)
+        
+        should_merge = False
+        merge_key_cols = []
+        auto_merge_status = None
+
+        if config:
+            auto_merge_status = config.get("auto_merge")
+            if auto_merge_status is True:
+                # 模式 A: 自動合併
+                should_merge = True
+                merge_key_cols = config.get("merge_keys", [])
+                logger.info(f"檢測到自動合併設定，套用鍵值: {merge_key_cols}")
+            elif auto_merge_status is False:
+                # 模式 B: 自動跳過
+                logger.info(f"檢測到設定為「不執行」進階合併，跳過。")
+                should_merge = False
+            else:
+                # 模式 C: 有紀錄但未設自動，則詢問
+                if yes_no_menu(f"是否對表格 <{title}> 進行進階資料合併？"):
+                    should_merge = True
+                    merge_key_cols = config.get("merge_keys", [])
+        else:
+            # 模式 D: 全新表格，初次詢問
+            if yes_no_menu(f"是否對表格 <{title}> 進行進階資料合併？（索引鍵相同僅保留最後一筆）"):
+                should_merge = True
+
+        if not should_merge:
+            continue
+
+        # 3. 獲取合併索引鍵 (若無歷史紀錄則調用函式)
+        if not merge_key_cols:
+            available_cols = get_table_columns(table_id) # 獲取資料表所有欄位
+            if not available_cols:
+                logger.warning(f"無法獲取表格 <{title}> 欄位，跳過。")
+                continue
+            
+            # 直接調用 utils.py 的函式，與 sort_data_by_date.py 同款介面
+            merge_key_cols = get_comparison_columns(available_cols, f"選擇 <{title}> 合併用的索引鍵")
+
+        if not merge_key_cols:
+            logger.warning("未選擇任何索引鍵，取消進階合併。")
+            continue
+
+        # --- 4. 執行 SQL 合併 (保留最後一筆) ---
+        merge_cols_str = ", ".join([f'"{c}"' for c in merge_key_cols])
+        
+        # 預覽與執行邏輯 (這裡簡化示範，需配合 _execute_sql)
+        delete_sql = f"""
+            DELETE FROM "{table_id}"
+            WHERE ctid IN (
+                SELECT ctid FROM (
+                    SELECT ctid, ROW_NUMBER() OVER (
+                        PARTITION BY {merge_cols_str}
+                        ORDER BY category_table_data_id DESC
+                    ) as row_num
+                    FROM "{table_id}"
+                ) t WHERE t.row_num > 1
+            );
+        """
+        
+        try:
+            # 實際執行刪除
+            _execute_sql(delete_sql)
+            logger.success(f"表格 <{title}> 進階合併完成。")
+            
+            # --- 5. 更新配置並詢問自動化願望 ---
+            if auto_merge_status is None: # 只針對尚未設定自動化的表詢問
+                auto_merge_status = yes_no_menu("以後是否自動對此表執行此合併操作？")
+            
+            new_config = {
+                "file_name": title,
+                "merge_keys": merge_key_cols,
+                "auto_merge": auto_merge_status,
+                "category_table_id": table_id
+            }
+
+            if config:
+                config.update(new_config)
+            else:
+                all_merge_configs.append(new_config)
+            with Checkpoint("資料檢查") as cpt:
+                if cpt:
+                    cpt.show("all_merge_configs", all_merge_configs)
+            # 將更新後的狀態存回 minor_info
+            minor_info["all_merge_configs"] = all_merge_configs
+            save_minor_info_to_sql(minor_info)
+
+        except Exception as e:
+            logger.error(f"執行合併時發生錯誤: {e}")
         # input("按 Enter 繼續下一個表格...")
         
     
@@ -759,7 +852,6 @@ def operations_of_postgresql():
     print("\n--- PostgreSQL 資料庫操作 ---")
     while True:
         print("\n請選擇操作：")
-        print("0. 連線資料庫")
         print("1. 顯示所有資料集清單 (包含 ID 和標題)，查看資料集簡介")
         print("2. 查詢並顯示特定資料集簡介")
         print("3. 重新命名資料集")
@@ -771,14 +863,7 @@ def operations_of_postgresql():
         choice = str(input("請輸入您的選擇 (1-7,q): "))
         if choice.lower() == 'q':
             logger.info("退出資料庫操作。")
-            try:
-                DB.close() # 關閉資料庫連線
-                logger.info("資料庫連線已關閉。")
-            except:
-                pass
             return
-        elif choice == '0':
-            connect_db(USERNAME, PASSWORD, DBNAME)
         elif choice == '1':
             _get_and_display_metadata_list()
         elif choice == '2':
@@ -795,14 +880,30 @@ def operations_of_postgresql():
             create_indexes_for_all_tables()
         else:
             break
-
+    
+DB = None
+def init(db_connection):
+    global global_metadata_cache, minor_info, DB
+    DB = db_connection
+    global_metadata_cache = get_global_data()
+    minor_info = get_minor_info_data()
 
 if __name__ == "__main__":
+    from utils import init_checkpoint
+    init_checkpoint(False, False)
+    setup_logging(level=20) # 在程式啟動時配置日誌系統，可以根據需要調整級別
     load_dotenv() # 在程式啟動時載入 .env 檔案
     config = dotenv_values() # 讀取 .env 檔案中的值
     USERNAME = config.get("USERNAME")
     PASSWORD = config.get("PASSWORD")
     DBNAME = config.get("DBNAME")
-    DB = connect_db(USERNAME, PASSWORD, DBNAME)
-    setup_logging(15)
+    DB = connect_db(USERNAME, PASSWORD, DBNAME)  
+    init(DB)
     operations_of_postgresql()
+    try:
+        DB.close() # 關閉資料庫連線
+        logger.notice("資料庫連線已關閉。")
+    except:
+        DB = None
+        logger.error("關閉資料庫連線時發生錯誤。")
+        pass
