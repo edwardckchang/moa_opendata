@@ -9,3 +9,8 @@ metadata/
 logs/
 raw_data/*.json
 temp_data_dedup.py
+moa_webpage.ini
+moa_url_fetcher.spec
+moa_url_fetcher.py
+function_call_map.py
+ui_interface.py
